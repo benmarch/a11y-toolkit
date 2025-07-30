@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Page</title>
+
+  <script src="./dist/main.js"></script>
+</head>
+
+<body>
+  <h1>Test Page</h1>
+  <section>
+    <header>
+      <h2>Focus Trap</h2>
+    </header>    
+
+    <button type="button" onclick="focusTrapActivate()">Activate</button>
+
+    <div id="trap" style="border: 1px solid black; padding: 10px;">
+      <button type="button">Button</button>
+      <a href="test.html">Link</a>
+      <input type="text" />
+      <span>Text</span>
+      <span contenteditable>Editable</span>
+      <button type="button" onclick="focusTrapDeactivate()">Deactivate</button>
+    </div>
+
+    <script>
+      const trapped = document.getElementById('trap')
+      const trap = new a11yUtils.FocusTrap(trapped)
+
+      function focusTrapActivate() {
+        trap.activate()
+      }
+
+      function focusTrapDeactivate() {
+        trap.deactivate()
+      }
+    </script>
+  </section>
+
+
+
+  <section>
+    <header>
+      <h2>Arrow Key Nav</h2>
+    </header>
+  
+    <button type="button" onclick="arrowNavActivate()">Activate</button>
+  
+    <div id="keyContainer" style="border: 1px solid black; padding: 10px;">
+      <button type="button">Button</button>
+      <a href="test.html">Link</a>
+      <input type="text" />
+      <span>Text</span>
+      <span contenteditable>Editable</span>
+      <button type="button" onclick="arrowNavDeactivate()">Deactivate</button>
+    </div>
+  
+    <script>
+      const keyContainer = document.getElementById('keyContainer')
+      const arrowNavElements = new a11yUtils.ElementList(a11yUtils.selectors.getInteractiveChildren(keyContainer))
+      const arrowNav = new a11yUtils.ArrowKeyNavigator(keyContainer, arrowNavElements, { horizontal: true, loop: true })
+
+      function arrowNavActivate() {
+        arrowNav.activate()
+      }
+
+      function arrowNavDeactivate() {
+        arrowNav.deactivate()
+      }
+    </script>
+  </section>
+</body>
+</html>
