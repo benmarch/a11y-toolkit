@@ -1,5 +1,5 @@
 {
-  "name": "a11y-toolkit",
+  "name": "@benmarch/a11y-toolkit",
   "version": "0.1.0",
   "description": "A collection of tools for providing more accessible user interfaces",
   "main": "./dist/main.js",
