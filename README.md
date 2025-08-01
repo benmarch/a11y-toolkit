@@ -5,6 +5,8 @@ This is a small collection of vanilla JS tools that can be used to make web apps
 These tools are very low-level building blocks that can be used to implement common accessibility (a11y)
 patterns for JavaScript based widgets such as menus, popovers, carousels, etc.
 
+Below is an overview, but you can read the [full documentation](https://benmarch.github.io/a11y-toolkit).
+
 ## Resources
 
 Many of the patterns that these tools implement can be found on the 

@@ -21,6 +21,10 @@ export default class RovingFocus {
   isActive: boolean = false
   index = 0
 
+  /**
+   * @param elements A list of elements to manage focus for
+   * @param options Options to pass to the RovingFocus
+   */
   constructor(elements: ElementList, { isActive = false }: RovingFocusOptions = {}) {
     this.elements = elements
 
@@ -29,26 +33,41 @@ export default class RovingFocus {
     }
   }
 
+  /**
+   * Move focus to the next element
+   */
   next() {
     if (this.index < this.elements.size) {
       this.focus(this.index + 1)
     }
   }
 
+  /**
+   * Move focus to the previous element
+   */
   prev() {
     if (this.index > 0) {
       this.focus(this.index - 1)
     }
   }
 
+  /**
+   * Move focus to the first element
+   */
   first() {
     this.focus(0)
   }
 
+  /**
+   * Move focus to the last element
+   */
   last() {
     this.focus(this.elements.size - 1)
   }
 
+  /**
+   * Move focus to a specific element by index
+   */
   focus(index?: number) {
     if (typeof index === 'number') {
       // if index out of bounds then bail
@@ -63,6 +82,11 @@ export default class RovingFocus {
     this.activate(true)
   }
 
+  /**
+   * Applies appropriate tabindex to all elements. Optionally focuses the active element. 
+   * 
+   * @param shouldFocusActive If true, will immediately focus the active element
+   */
   activate(shouldFocusActive: boolean = false) {
     this.isActive = true
 
@@ -90,6 +114,9 @@ export default class RovingFocus {
     }
   }
 
+  /** 
+   * Removes tabindexes from all elements
+   */
   deactivate() {
     this.isActive = false
     this.index = 0

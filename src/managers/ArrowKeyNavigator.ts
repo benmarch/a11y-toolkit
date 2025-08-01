@@ -32,6 +32,12 @@ export default class ArrowKeyNavigator {
   options: ArrowKeyNavigatorOptions
   isActive = false
 
+  /**
+   * 
+   * @param container An ancestor element that contains all of the navigable elements
+   * @param elements A list of elements that will be navigable via arrow keys
+   * @param options 
+   */
   constructor(container: HTMLElement, elements: ElementList, options: ArrowKeyNavigatorOptions = {}) {
     this.container = container
     this.elements = elements
