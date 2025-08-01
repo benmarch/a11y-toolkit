@@ -5,6 +5,7 @@ export interface ArrowKeyNavigatorOptions {
   horizontal?: boolean
   vertical?: boolean
   loop?: boolean
+  isActive?: boolean
 }
 
 export default class ArrowKeyNavigator {
@@ -28,20 +29,28 @@ export default class ArrowKeyNavigator {
     }
 
     this.handleKeyDown = this.handleKeyDown.bind(this)
+
+    if (options.isActive) {
+      this.activate()
+    }
   }
 
   activate() {
     this.isActive = true
-    this.rover.focus()
+    this.rover.activate()
 
     this.container.addEventListener('keydown', this.handleKeyDown)
   }
 
   deactivate() {
     this.isActive = false
-    this.rover.reset()
+    this.rover.deactivate()
 
     this.container.removeEventListener('keydown', this.handleKeyDown)
+  }
+
+  focus() {
+    this.rover.focus()
   }
 
   private handleKeyDown(event: KeyboardEvent) {
@@ -52,24 +61,28 @@ export default class ArrowKeyNavigator {
     switch (event.key) {
       case 'ArrowRight': {
         if (this.options.horizontal) {
+          event.preventDefault()
           this.next()
         }
         break
       }
       case 'ArrowDown': {
         if (this.options.vertical) {
+          event.preventDefault()
           this.next()
         }
         break
       }
       case 'ArrowLeft': {
         if (this.options.horizontal) {
+          event.preventDefault()
           this.prev()
         }
         break
       }
       case 'ArrowUp': {
         if (this.options.vertical) {
+          event.preventDefault()
           this.prev()
         }
         break

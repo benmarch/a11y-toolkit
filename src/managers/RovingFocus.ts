@@ -1,11 +1,20 @@
 import ElementList from '../domain/ElementList'
 
+export interface RovingFocusOptions {
+  isActive?: boolean
+}
+
 export default class RovingFocus {
   elements: ElementList
+  isActive: boolean = false
   index = 0
 
-  constructor(elements: ElementList) {
+  constructor(elements: ElementList, { isActive = false }: RovingFocusOptions = {}) {
     this.elements = elements
+
+    if (isActive) {
+      this.activate()
+    }
   }
 
   next() {
@@ -28,7 +37,7 @@ export default class RovingFocus {
     this.focus(this.elements.size - 1)
   }
 
-  focus(index?: number) {    
+  focus(index?: number) {
     if (typeof index === 'number') {
       // if index out of bounds then bail
       if (index < 0 || index >= this.elements.size) {
@@ -38,6 +47,12 @@ export default class RovingFocus {
       // update stored index
       this.index = index
     }
+
+    this.activate(true)
+  }
+
+  activate(shouldFocusActive: boolean = false) {
+    this.isActive = true
 
     // iterate through each element
     let i = -1
@@ -53,7 +68,9 @@ export default class RovingFocus {
       // find the active element and focus it
       if (this.index === i) {
         element.tabIndex = 0
-        element.focus()
+        if (shouldFocusActive) {
+          element.focus()
+        }
       } else {
         // unfocus the other elements
         element.tabIndex = -1
@@ -61,9 +78,10 @@ export default class RovingFocus {
     }
   }
 
-  reset() {
+  deactivate() {
+    this.isActive = false
     this.index = 0
-    
+
     for (const element of this.elements) {
       // if the elemental is not focusable then continue
       if (!('tabIndex' in element)) {

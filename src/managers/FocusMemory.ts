@@ -1,9 +1,9 @@
-import { BasicElement } from '../domain/interfaces'
+import { Elemental } from '../domain/interfaces'
 
 export default class FocusMemory {
-  savedElement?: BasicElement | null
+  savedElement?: Elemental | null
 
-  set(element: BasicElement | null = document.activeElement) {
+  set(element: Elemental | null = document.activeElement) {
     this.savedElement = element
   }
 

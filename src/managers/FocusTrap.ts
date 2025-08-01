@@ -1,13 +1,18 @@
 import FocusMemory from './FocusMemory'
 import { getFirstFocusable, getLastFocusable } from '../primitives/selectors'
+import { Elemental } from '../domain/interfaces'
+
+export interface FocusTrapOptions {
+  isActive?: boolean
+}
 
 export default class FocusTrap {
-  containerElement: Element
+  containerElement: Elemental
   isActive: boolean = false
   focusMemory = new FocusMemory()
   direction: 1 | -1 = 1
 
-  constructor(containerElement: Element, isActive: boolean = false) {
+  constructor(containerElement: Elemental, { isActive = false }: FocusTrapOptions = {}) {
     if (!containerElement) {
       throw new Error('Container Element not provided')
     }
@@ -24,7 +29,7 @@ export default class FocusTrap {
   activate() {
     this.isActive = true
     this.focusNext()
-    
+
     window.addEventListener('focus', this.handleFocus, true)
     window.addEventListener('keydown', this.handleKeyDown, true)
   }
@@ -37,7 +42,7 @@ export default class FocusTrap {
   }
 
   private handleFocus(event: Event) {
-    if (event.target) {
+    if (event.target && this.containerElement instanceof HTMLElement) {
       if (this.containerElement?.contains(event.target as Node)) {
         this.focusMemory.set(event.target)
       } else {
@@ -49,14 +54,6 @@ export default class FocusTrap {
   private handleKeyDown(event: KeyboardEvent) {
     if (event.key === 'Tab') {
       this.direction = event.shiftKey ? -1 : 1
-
-      if (this.direction === 1 && this.focusMemory.get() === getLastFocusable(this.containerElement)) {
-        getFirstFocusable(this.containerElement)?.focus()
-        event.preventDefault()
-      } else if (this.direction === -1 && this.focusMemory.get() === getFirstFocusable(this.containerElement)) {
-        getLastFocusable(this.containerElement)?.focus()
-        event.preventDefault()
-      }
     }
   }
 

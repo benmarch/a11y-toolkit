@@ -2,8 +2,12 @@
   "name": "a11y-toolkit",
   "version": "0.1.0",
   "description": "A collection of tools for providing more accessible user interfaces",
-  "main": "./dist/index.js",
-  "module": "./src/index.ts",
+  "main": "./dist/main.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",    
+    "README.md"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack"
