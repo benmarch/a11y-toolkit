@@ -1,7 +1,16 @@
 import { Elemental } from '../domain/interfaces'
 
+/** A list of tagnames that can be interactive */
 const focusableTags = ['A', 'INPUT', 'SELECT', 'TEXTAREA', 'BUTTON', 'IFRAME']
 
+/**
+ * Determines as best as possible whether a given element can hold focus. This is
+ * different than any element with a `focus()` method as most elements will do nothing
+ * interesting when `focus()` is called. This is to determine if `focus()` is worth calling.
+ * 
+ * @param element An element to check whether it is focusable
+ * @returns boolean
+ */
 export const isFocusable = (element: Elemental) => {
   if (!element || !(element instanceof HTMLElement)) {
     return false
@@ -45,6 +54,12 @@ export const isFocusable = (element: Elemental) => {
   return false
 }
 
+/**
+ * Determines whether a given element is interactive.
+ * 
+ * @param element An element to check whether it is interactive
+ * @returns boolean
+ */
 export const isInteractive = (element: Elemental) => {
   if (!isFocusable(element) || !('getAttribute' in element)) {
     return false

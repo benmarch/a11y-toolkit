@@ -1,9 +1,21 @@
 import ElementList from '../domain/ElementList'
 
 export interface RovingFocusOptions {
+  /** If true, enables the RovingFocus immediately upon creation */
   isActive?: boolean
 }
 
+/**
+ * Implements a Roving Focus or Roving Tab Index pattern: https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Keyboard-navigable_JavaScript_widgets#technique_1_roving_tabindex
+ * 
+ * Ensures the only one of the provided elements can be tab-focused at any given time.
+ * The other elements will be deactivated from tabbing by setting tabindex="-1".
+ * 
+ * The focused element can be changed by calling the `focus()` method with the index of the element
+ * to focus, or by calling `next()` or `prev()` to cycle.
+ * 
+ * This is useful for implementing group-like patterns where only one element in a group should be focusable at a time.
+ */
 export default class RovingFocus {
   elements: ElementList
   isActive: boolean = false

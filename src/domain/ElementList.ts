@@ -1,5 +1,11 @@
 import { Elemental } from "./interfaces";
 
+/**
+ * Represents a list of element-like objects. This can be used as a shared memory
+ * among Managers so that the consumer has full control at all times.
+ * 
+ * It is essentially a Set with an O(1) lookup for elements.
+ */
 export default class ElementList extends Set<Elemental> {
   elements: Elemental[]
 

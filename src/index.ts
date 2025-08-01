@@ -5,7 +5,7 @@ export { default as RovingFocus } from './managers/RovingFocus'
 
 export * as modifiers from './primitives/modifiers'
 export * as selectors from './primitives/selectors'
-export * as properties from './primitives/properties'
+export * as properties from './primitives/inspectors'
 
 export { default as ElementList } from './domain/ElementList'
 export * from './domain/interfaces'

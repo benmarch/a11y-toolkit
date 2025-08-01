@@ -1,3 +1,4 @@
-export type BasicElement = EventTarget
-
-export type Elemental = BasicElement | Element | HTMLElement | SVGElement
+/**
+ * Any element-like DOM object
+ */
+export type Elemental = EventTarget | Element | HTMLElement | SVGElement

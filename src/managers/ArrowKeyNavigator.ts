@@ -2,12 +2,28 @@ import ElementList from "../domain/ElementList";
 import RovingFocus from "./RovingFocus";
 
 export interface ArrowKeyNavigatorOptions {
+  /** If true, enables left and right arrow keys */
   horizontal?: boolean
+
+  /** If true, enables up and down arrow keys */
   vertical?: boolean
+
+  /** If true, focus will loop back around when navigating past the first or last element */
   loop?: boolean
+
+  /** If true, enables the ArrowKeyNavigator on creation */
   isActive?: boolean
 }
 
+/**
+ * Manages a list of elements inside a specific container to navigate through using
+ * arrow keys. This can be done using the left and right arrows, the up and down arrows,
+ * or both. Under the hood, it uses a RovingFocus to prevent tab navigation among items.
+ * 
+ * This can be used to implement various menu-like patterns.
+ * 
+ * Be sure to disable when done to prevent memory leaks.
+ */
 export default class ArrowKeyNavigator {
   container: HTMLElement
   // elements is shared by the rover so be careful modifying it directly
@@ -35,6 +51,9 @@ export default class ArrowKeyNavigator {
     }
   }
 
+  /**
+   * Enables the ArrowKeyNavigator
+   */
   activate() {
     this.isActive = true
     this.rover.activate()
@@ -42,6 +61,9 @@ export default class ArrowKeyNavigator {
     this.container.addEventListener('keydown', this.handleKeyDown)
   }
 
+  /**
+   * Disables and cleans up the ArrowKeyNavigator
+   */
   deactivate() {
     this.isActive = false
     this.rover.deactivate()
@@ -49,6 +71,9 @@ export default class ArrowKeyNavigator {
     this.container.removeEventListener('keydown', this.handleKeyDown)
   }
 
+  /**
+   * Focuses the current element
+   */
   focus() {
     this.rover.focus()
   }
