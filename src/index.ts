@@ -8,4 +8,5 @@ export * as selectors from './primitives/selectors'
 export * as properties from './primitives/inspectors'
 
 export { default as ElementList } from './domain/ElementList'
+export { default as DOMOrderElementList } from './domain/DOMOrderElementList'
 export * from './domain/interfaces'

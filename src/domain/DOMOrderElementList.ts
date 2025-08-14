@@ -2,7 +2,7 @@ import ElementList from './ElementList'
 import { Elemental } from './interfaces'
 import { getDOMOrder } from '../primitives/selectors'
 
-export class DOMOrderElementList extends ElementList {
+export default class DOMOrderElementList extends ElementList {
   container: Elemental
 
   constructor(container: Elemental, elements?: Iterable<Elemental> | null) {
