@@ -1,5 +1,4 @@
-import FocusMemory from './FocusMemory'
-import { getFirstFocusableChild, getLastFocusableChild } from '../primitives/selectors'
+import { createFocusTrap, type FocusTrap as TFocusTrap } from 'focus-trap'
 import { Elemental } from '../domain/interfaces'
 
 export interface FocusTrapOptions {
@@ -9,20 +8,19 @@ export interface FocusTrapOptions {
 
 /**
  * Ensures that the user can only focus on elements within a specified container ("trap").
- * 
+ *
  * When enabled, the user will not be able to interact with elements outside the trap.
- * 
+ *
  * Be sure to disable when done to prevent memory leaks.
  */
 export default class FocusTrap {
   container: Elemental
   isActive: boolean = false
-  focusMemory = new FocusMemory()
-  direction: 1 | -1 = 1
+  trap: TFocusTrap
 
   /**
    * @param container The element to trap focus within
-   * @param options Options to provide to the FocusTrap 
+   * @param options Options to provide to the FocusTrap
    */
   constructor(container: Elemental, { isActive = false }: FocusTrapOptions = {}) {
     if (!container) {
@@ -30,8 +28,11 @@ export default class FocusTrap {
     }
     this.container = container
 
-    this.handleFocus = this.handleFocus.bind(this)
-    this.handleKeyDown = this.handleKeyDown.bind(this)
+    this.trap = createFocusTrap(container as HTMLElement, {
+      escapeDeactivates: false,
+      clickOutsideDeactivates: false,
+      returnFocusOnDeactivate: false,
+    })
 
     if (isActive) {
       this.activate()
@@ -43,10 +44,7 @@ export default class FocusTrap {
    */
   activate() {
     this.isActive = true
-    this.focusNext()
-
-    window.addEventListener('focus', this.handleFocus, true)
-    window.addEventListener('keydown', this.handleKeyDown, true)
+    this.trap.activate()
   }
 
   /**
@@ -54,32 +52,6 @@ export default class FocusTrap {
    */
   deactivate() {
     this.isActive = false
-
-    window.removeEventListener('focus', this.handleFocus, true)
-    window.removeEventListener('keydown', this.handleKeyDown, true)
-  }
-
-  private handleFocus(event: Event) {
-    if (event.target && this.container instanceof HTMLElement) {
-      if (this.container?.contains(event.target as Node)) {
-        this.focusMemory.set(event.target)
-      } else {
-        this.focusNext()
-      }
-    }
-  }
-
-  private handleKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Tab') {
-      this.direction = event.shiftKey ? -1 : 1
-    }
-  }
-
-  private focusNext() {
-    if (this.direction === 1) {
-      getFirstFocusableChild(this.container)?.focus()
-    } else {
-      getLastFocusableChild(this.container)?.focus()
-    }
-  }
+    this.trap.deactivate()
+  }  
 }

@@ -1,5 +1,5 @@
-import ElementList from "../domain/ElementList";
-import RovingFocus from "./RovingFocus";
+import ElementList from '../domain/ElementList'
+import RovingFocus from './RovingFocus'
 
 export interface ArrowKeyNavigatorOptions {
   /** If true, enables left and right arrow keys */
@@ -7,6 +7,9 @@ export interface ArrowKeyNavigatorOptions {
 
   /** If true, enables up and down arrow keys */
   vertical?: boolean
+
+  /** If true, pressing the Home key navigates to the first element, and pressing the End key navigates to the last element */
+  homeEnd?: boolean
 
   /** If true, focus will loop back around when navigating past the first or last element */
   loop?: boolean
@@ -19,9 +22,9 @@ export interface ArrowKeyNavigatorOptions {
  * Manages a list of elements inside a specific container to navigate through using
  * arrow keys. This can be done using the left and right arrows, the up and down arrows,
  * or both. Under the hood, it uses a RovingFocus to prevent tab navigation among items.
- * 
+ *
  * This can be used to implement various menu-like patterns.
- * 
+ *
  * Be sure to disable when done to prevent memory leaks.
  */
 export default class ArrowKeyNavigator {
@@ -33,10 +36,10 @@ export default class ArrowKeyNavigator {
   isActive = false
 
   /**
-   * 
+   *
    * @param container An ancestor element that contains all of the navigable elements
    * @param elements A list of elements that will be navigable via arrow keys
-   * @param options 
+   * @param options
    */
   constructor(container: HTMLElement, elements: ElementList, options: ArrowKeyNavigatorOptions = {}) {
     this.container = container
@@ -115,6 +118,20 @@ export default class ArrowKeyNavigator {
         if (this.options.vertical) {
           event.preventDefault()
           this.prev()
+        }
+        break
+      }
+      case 'Home': {
+        if (this.options.homeEnd) {
+          event.preventDefault()
+          this.rover.first()
+        }
+        break
+      }
+      case 'End': {
+        if (this.options.homeEnd) {
+          event.preventDefault()
+          this.rover.last()
         }
         break
       }

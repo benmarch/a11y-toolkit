@@ -1,21 +1,21 @@
 const path = require('path')
 const nodeExternals = require('webpack-node-externals')
 
-module.exports = {
+module.exports = (env, argv) => ({
   entry: {
     main: './src/index.ts'
   },
   target: 'node',
   output: {
-    library: 'a11yUtils',
+    library: 'a11yToolkit',
     libraryTarget: 'umd',
     globalObject: 'globalThis',
     filename: '[name].js',
     path: path.resolve(__dirname, 'dist'),
   },
-  externals: [
+  externals: argv.mode === 'production' ? [
     nodeExternals(),    
-  ],
+  ] : [],
   watchOptions: {
     ignored: ['**/dist', '**/.storybook', '**/node_modules'],
   },
@@ -37,4 +37,4 @@ module.exports = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
   },
-}
+})

@@ -1,4 +1,6 @@
-import { Elemental } from '../domain/interfaces'
+import { focusable, tabbable } from 'tabbable'
+import ElementList from '../domain/ElementList'
+import { Elemental, FocusableElement } from '../domain/interfaces'
 
 /**
  * Searches for all focusable elements inside a given container element.
@@ -7,16 +9,12 @@ import { Elemental } from '../domain/interfaces'
  * @param container Container element to search within
  * @returns All focusable elements inside the container
  */
-export const getFocusableChildren = (container: Elemental): HTMLElement[] | null => {
+export const getFocusableChildren = (container: Elemental): FocusableElement[] | null => {
   if (!('querySelectorAll' in container)) {
     return null
   }
 
-  const elements = container.querySelectorAll<HTMLElement>(
-    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex], [contenteditable]',
-  )
-
-  return [...elements]
+  return focusable(container)
 }
 
 /**
@@ -26,16 +24,12 @@ export const getFocusableChildren = (container: Elemental): HTMLElement[] | null
  * @param container Container element to search within
  * @returns All interactive elements inside the container
  */
-export const getInteractiveChildren = (container: Elemental): HTMLElement[] | null => {
+export const getInteractiveChildren = (container: Elemental): FocusableElement[] | null => {
   if (!('querySelectorAll' in container)) {
     return null
   }
 
-  const elements = container.querySelectorAll<HTMLElement>(
-    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable]',
-  )
-
-  return [...elements]
+  return tabbable(container)
 }
 
 /**
@@ -44,7 +38,7 @@ export const getInteractiveChildren = (container: Elemental): HTMLElement[] | nu
  * @param container Container element to search within
  * @returns The first focusable element within the container or null
  */
-export const getFirstFocusableChild = (container: Elemental): HTMLElement | null => {
+export const getFirstFocusableChild = (container: Elemental): FocusableElement | null => {
   return getFocusableChildren(container)?.[0] ?? null
 }
 
@@ -54,7 +48,7 @@ export const getFirstFocusableChild = (container: Elemental): HTMLElement | null
  * @param container Container element to search within
  * @returns The first interactive element within the container or null
  */
-export const getFirstInteractiveChild = (container: Elemental): HTMLElement | null => {
+export const getFirstInteractiveChild = (container: Elemental): FocusableElement | null => {
   return getInteractiveChildren(container)?.[0] ?? null
 }
 
@@ -64,7 +58,7 @@ export const getFirstInteractiveChild = (container: Elemental): HTMLElement | nu
  * @param container Container element to search within
  * @returns The last focusable element within the container or null
  */
-export const getLastFocusableChild = (container: Elemental): HTMLElement | null => {
+export const getLastFocusableChild = (container: Elemental): FocusableElement | null => {
   const elements = getFocusableChildren(container) ?? []
 
   return elements[elements.length - 1] || null
@@ -76,8 +70,26 @@ export const getLastFocusableChild = (container: Elemental): HTMLElement | null 
  * @param container Container element to search within
  * @returns The last interactive element within the container or null
  */
-export const getLastInteractiveChild = (container: Elemental): HTMLElement | null => {
+export const getLastInteractiveChild = (container: Elemental): FocusableElement | null => {
   const elements = getInteractiveChildren(container) ?? []
 
   return elements[elements.length - 1] || null
+}
+
+export const getDOMOrder = (container: Elemental, elements: ElementList) => {
+  if (!container || !(container instanceof Element)) {
+    return elements
+  }
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_ELEMENT)
+  const newElements = new ElementList()
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode as Elemental
+    if (elements.has(node)) {
+      newElements.add(node)
+    }
+  }
+  
+  return newElements
 }

@@ -1,6 +1,6 @@
 {
   "name": "@benmarch/a11y-toolkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A collection of tools for providing more accessible user interfaces",
   "main": "./dist/main.js",
   "types": "./dist/index.d.ts",
@@ -11,7 +11,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "docs": "typedoc src/index.ts",
-    "build": "webpack"
+    "build": "webpack --mode=production",
+    "dev": "webpack --mode=development --watch"
   },
   "author": "Ben March",
   "license": "ISC",
@@ -22,5 +23,9 @@
     "webpack": "5.100.2",
     "webpack-cli": "6.0.1",
     "webpack-node-externals": "3.0.0"
+  },
+  "dependencies": {
+    "focus-trap": "7.6.5",
+    "tabbable": "6.2.0"
   }
 }
