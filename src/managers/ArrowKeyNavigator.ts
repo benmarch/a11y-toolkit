@@ -81,10 +81,10 @@ export default class ArrowKeyNavigator {
   }
 
   /**
-   * Focuses the current element
+   * Focuses the current element or a specific element by index
    */
-  focus() {
-    this.rover.focus()
+  focus(index?: number) {
+    this.rover.focus(index)
   }
 
   private handleKeyDown(event: KeyboardEvent) {
