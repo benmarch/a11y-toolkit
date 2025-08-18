@@ -1,7 +1,7 @@
-export { default as ArrowKeyNavigator } from './managers/ArrowKeyNavigator'
+export { default as ArrowKeyNavigator, type ArrowKeyNavigatorOptions } from './managers/ArrowKeyNavigator'
 export { default as FocusMemory } from './managers/FocusMemory'
-export { default as FocusTrap } from './managers/FocusTrap'
-export { default as RovingFocus } from './managers/RovingFocus'
+export { default as FocusTrap, type FocusTrapOptions } from './managers/FocusTrap'
+export { default as RovingFocus, type RovingFocusOptions } from './managers/RovingFocus'
 
 export * as modifiers from './primitives/modifiers'
 export * as selectors from './primitives/selectors'

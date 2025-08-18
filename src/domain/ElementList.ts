@@ -9,6 +9,9 @@ import { Elemental } from './interfaces'
 export default class ElementList extends Set<Elemental> {
   elements: Elemental[]
 
+  /**
+   * @param elements An optional list of Elemental to initialize the list with
+   */
   constructor(elements?: Iterable<Elemental> | null) {
     super()
     this.elements = []
@@ -20,10 +23,22 @@ export default class ElementList extends Set<Elemental> {
     }
   }
 
+  /**
+   * Gets an element at the specified index.
+   *
+   * @param index The index of the element to retrieve.
+   * @returns The element at the specified index, or undefined if the index is out of bounds.
+   */
   get(index: number) {
     return this.elements[index]
   }
 
+  /**
+   * Adds an Elemental to the ElementList.
+   *
+   * @param element The Elemental to add.
+   * @returns The ElementList instance.
+   */
   add(element: Elemental) {
     if (!this.has(element)) {
       super.add(element)
@@ -33,6 +48,12 @@ export default class ElementList extends Set<Elemental> {
     return this
   }
 
+  /**
+   * Deletes an Elemental from the ElementList.
+   *
+   * @param element The Elemental to delete.
+   * @returns True if the element was deleted, false otherwise.
+   */
   delete(element: Elemental) {
     if (super.delete(element)) {
       this.elements.splice(this.elements.indexOf(element), 1)
@@ -43,11 +64,19 @@ export default class ElementList extends Set<Elemental> {
     return false
   }
 
+  /**
+   * Clears all elements from the ElementList.
+   */
   clear() {
     super.clear()
     this.elements = []
   }
 
+  /**
+   * Converts the ElementList to an array.
+   *
+   * @returns An array of the elements in the ElementList.
+   */
   asArray() {
     return [...this.elements]
   }
