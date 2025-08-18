@@ -9,7 +9,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "docs": "typedoc src/index.ts",
     "build": "webpack --mode=production",
     "dev": "webpack --mode=development --watch",
@@ -23,12 +23,15 @@
   "devDependencies": {
     "@eslint/css": "0.10.0",
     "@eslint/js": "9.33.0",
+    "@types/jest": "30.0.0",
     "eslint": "9.33.0",
     "globals": "16.3.0",
     "husky": "9.1.7",
     "jest": "30.0.5",
+    "jest-environment-jsdom": "30.0.5",
     "lint-staged": "16.1.5",
     "prettier": "3.6.2",
+    "ts-jest": "29.4.1",
     "ts-loader": "9.5.2",
     "typedoc": "0.28.8",
     "typescript": "5.8.3",

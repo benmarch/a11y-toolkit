@@ -1,9 +1,9 @@
-import { Elemental } from "./interfaces";
+import { Elemental } from './interfaces'
 
 /**
  * Represents a list of element-like objects. This can be used as a shared memory
  * among Managers so that the consumer has full control at all times.
- * 
+ *
  * It is essentially a Set with an O(1) lookup for elements.
  */
 export default class ElementList extends Set<Elemental> {
@@ -15,7 +15,7 @@ export default class ElementList extends Set<Elemental> {
 
     if (elements) {
       for (const element of elements) {
-        this.add(element)        
+        this.add(element)
       }
     }
   }
@@ -35,11 +35,7 @@ export default class ElementList extends Set<Elemental> {
 
   delete(element: Elemental) {
     if (super.delete(element)) {
-      const index = this.elements.indexOf(element)
-
-      if (index > -1) {
-        this.elements.splice(index, 1)
-      }
+      this.elements.splice(this.elements.indexOf(element), 1)
 
       return true
     }
