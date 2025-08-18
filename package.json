@@ -13,14 +13,26 @@
     "docs": "typedoc src/index.ts",
     "build": "webpack --mode=production",
     "dev": "webpack --mode=development --watch",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint --fix src/",
+    "format": "prettier --write",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky"
   },
   "author": "Ben March",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/css": "0.10.0",
+    "@eslint/js": "9.33.0",
+    "eslint": "9.33.0",
+    "globals": "16.3.0",
+    "husky": "9.1.7",
+    "jest": "30.0.5",
+    "lint-staged": "16.1.5",
+    "prettier": "3.6.2",
     "ts-loader": "9.5.2",
     "typedoc": "0.28.8",
     "typescript": "5.8.3",
+    "typescript-eslint": "8.39.1",
     "webpack": "5.100.2",
     "webpack-cli": "6.0.1",
     "webpack-node-externals": "3.0.0"
