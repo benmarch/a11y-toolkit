@@ -2,6 +2,7 @@ export { default as ArrowKeyNavigator, type ArrowKeyNavigatorOptions } from './m
 export { default as FocusMemory } from './managers/FocusMemory'
 export { default as FocusTrap, type FocusTrapOptions } from './managers/FocusTrap'
 export { default as RovingFocus, type RovingFocusOptions } from './managers/RovingFocus'
+export { default as TabStopPortal, type TabStopPortalOptions } from './managers/TabStopPortal'
 
 export * as modifiers from './primitives/modifiers'
 export * as selectors from './primitives/selectors'
