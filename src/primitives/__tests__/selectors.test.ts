@@ -5,6 +5,8 @@ import {
   getFirstInteractiveChild,
   getLastFocusableChild,
   getLastInteractiveChild,
+  getNextInteractiveElement,
+  getPreviousInteractiveElement,
   getDOMOrder,
 } from '../selectors'
 import { focusable, tabbable } from 'tabbable'
@@ -259,6 +261,132 @@ describe('selectors', () => {
 
     it('should handle null return from getInteractiveChildren', () => {
       const result = getLastInteractiveChild(nonElementContainer)
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getNextInteractiveElement', () => {
+    it('should return next interactive element when found', () => {
+      mockTabbable.mockReturnValue([element1, element2, element3])
+
+      const result = getNextInteractiveElement(container, element1)
+
+      expect(result).toBe(element2)
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return next element from middle of array', () => {
+      mockTabbable.mockReturnValue([element1, element2, element3])
+
+      const result = getNextInteractiveElement(container, element2)
+
+      expect(result).toBe(element3)
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null when current element is last', () => {
+      mockTabbable.mockReturnValue([element1, element2, element3])
+
+      const result = getNextInteractiveElement(container, element3)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null when current element is not found', () => {
+      const outsideElement = document.createElement('span')
+      mockTabbable.mockReturnValue([element1, element2])
+
+      const result = getNextInteractiveElement(container, outsideElement)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null when no interactive elements found', () => {
+      mockTabbable.mockReturnValue([])
+
+      const result = getNextInteractiveElement(container, element1)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null for non-Element containers', () => {
+      const result = getNextInteractiveElement(nonElementContainer, element1)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).not.toHaveBeenCalled()
+    })
+
+    it('should handle single element array', () => {
+      mockTabbable.mockReturnValue([element1])
+
+      const result = getNextInteractiveElement(container, element1)
+
+      expect(result).toBeNull()
+    })
+  })
+
+  describe('getPreviousInteractiveElement', () => {
+    it('should return previous interactive element when found', () => {
+      mockTabbable.mockReturnValue([element1, element2, element3])
+
+      const result = getPreviousInteractiveElement(container, element3)
+
+      expect(result).toBe(element2)
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return previous element from middle of array', () => {
+      mockTabbable.mockReturnValue([element1, element2, element3])
+
+      const result = getPreviousInteractiveElement(container, element2)
+
+      expect(result).toBe(element1)
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null when current element is first', () => {
+      mockTabbable.mockReturnValue([element1, element2, element3])
+
+      const result = getPreviousInteractiveElement(container, element1)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null when current element is not found', () => {
+      const outsideElement = document.createElement('span')
+      mockTabbable.mockReturnValue([element1, element2])
+
+      const result = getPreviousInteractiveElement(container, outsideElement)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null when no interactive elements found', () => {
+      mockTabbable.mockReturnValue([])
+
+      const result = getPreviousInteractiveElement(container, element1)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).toHaveBeenCalledWith(container)
+    })
+
+    it('should return null for non-Element containers', () => {
+      const result = getPreviousInteractiveElement(nonElementContainer, element1)
+
+      expect(result).toBeNull()
+      expect(mockTabbable).not.toHaveBeenCalled()
+    })
+
+    it('should handle single element array', () => {
+      mockTabbable.mockReturnValue([element1])
+
+      const result = getPreviousInteractiveElement(container, element1)
 
       expect(result).toBeNull()
     })

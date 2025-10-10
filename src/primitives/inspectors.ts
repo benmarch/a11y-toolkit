@@ -30,11 +30,3 @@ export const isInteractive = (element: Elemental) => {
 
   return isTabbable(element)
 }
-
-export const isDescendentOf = (container: Element, target: Elemental) => {
-  if (!(container instanceof Element) || !(target instanceof Element)) {
-    return false
-  }
-
-  return container.contains(target)
-}

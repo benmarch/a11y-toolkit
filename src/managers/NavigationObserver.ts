@@ -98,7 +98,10 @@ export default class NavigationObserver {
     this.subscribers.push(subscriber)
 
     return () => {
-      this.subscribers = this.subscribers.splice(this.subscribers.indexOf(subscriber), 1)
+      const index = this.subscribers.indexOf(subscriber)
+      if (index > -1) {
+        this.subscribers.splice(index, 1)
+      }
     }
   }
 
@@ -203,20 +206,27 @@ export default class NavigationObserver {
     event: KeyboardEvent | MouseEvent | FocusEvent,
     overrides: Partial<NavigationEvent> = {},
   ) {
-    this.subscribers.forEach((subscriber) =>
-      subscriber({
-        event,
-        type: 'TO',
-        fromElement: this.fromElement,
-        toElement: this.toElement,
-        isTabNavigating: this.isTabNavigating,
-        isArrowKeyNavigating: this.isArrowKeyNavigating,
-        isKeyboardNavigating: this.isKeyboardNavigating,
-        isMouseNavigating: this.isMouseNavigating,
-        isForwardNavigating: this.isForwardNavigating,
-        isBackwardNavigating: this.isBackwardNavigating,
-        ...overrides,
-      }),
-    )
+    const navigationEvent = {
+      event,
+      type: 'TO' as const,
+      fromElement: this.fromElement,
+      toElement: this.toElement,
+      isTabNavigating: this.isTabNavigating,
+      isArrowKeyNavigating: this.isArrowKeyNavigating,
+      isKeyboardNavigating: this.isKeyboardNavigating,
+      isMouseNavigating: this.isMouseNavigating,
+      isForwardNavigating: this.isForwardNavigating,
+      isBackwardNavigating: this.isBackwardNavigating,
+      ...overrides,
+    }
+
+    this.subscribers.forEach((subscriber) => {
+      try {
+        subscriber(navigationEvent)
+      } catch (error) {
+        // Log the error but don't let it stop other subscribers
+        console.error('NavigationObserver subscriber error:', error)
+      }
+    })
   }
 }
