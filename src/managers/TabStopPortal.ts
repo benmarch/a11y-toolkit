@@ -1,5 +1,6 @@
 import { FocusableElement } from '../domain/interfaces'
 import {
+  focusFirstFocusableChild,
   focusFirstInteractiveChild,
   focusLastInteractiveChild,
   focusNextInteractiveElement,
@@ -86,6 +87,22 @@ export default class TabStopPortal {
     this.navigationObserver.deactivate()
 
     this.unsubscribe?.()
+  }
+
+  focus() {
+    if (!this.isActive) {
+      return
+    }
+
+    if ((this.portalContainer.getAttribute('tabindex') || '0') !== '0') {
+      this.portalContainer.focus()
+    } else {
+      focusFirstFocusableChild(this.portalContainer)
+    }
+
+    if (document.activeElement === this.portalContainer || this.portalContainer.contains(document.activeElement)) {
+      this.isPortalling = true
+    }
   }
 
   private handleNavigation(navEvent: NavigationEvent) {

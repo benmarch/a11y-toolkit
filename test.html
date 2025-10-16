@@ -79,6 +79,7 @@
 
     <button type="button" onclick="tabStopPortalAfterActivate()">Activate After</button>
     <button type="button" onclick="tabStopPortalBeforeActivate()">Activate Before</button>
+    <button type="button" onclick="focusPortal()">Focus Portal</button>
 
     <div id="tabStopElements">
       <button type="button">Previous</button>
@@ -117,6 +118,11 @@
 
       function tabStopPortalBeforeDeactivate() {
         beforePortal.deactivate()
+      }
+
+      function focusPortal() {
+        beforePortal.focus()
+        afterPortal.focus()
       }
     </script>
   </section>

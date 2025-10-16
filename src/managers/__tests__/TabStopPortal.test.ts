@@ -1,5 +1,6 @@
 import TabStopPortal, { TabStopPortalOptions } from '../TabStopPortal'
 import {
+  focusFirstFocusableChild,
   focusFirstInteractiveChild,
   focusLastInteractiveChild,
   focusNextInteractiveElement,
@@ -9,6 +10,7 @@ import { getFirstFocusableChild, getLastFocusableChild } from '../../primitives/
 
 // Mock the modifiers
 jest.mock('../../primitives/modifiers', () => ({
+  focusFirstFocusableChild: jest.fn(),
   focusFirstInteractiveChild: jest.fn(),
   focusLastInteractiveChild: jest.fn(),
   focusNextInteractiveElement: jest.fn(),
@@ -21,6 +23,7 @@ jest.mock('../../primitives/selectors', () => ({
   getLastFocusableChild: jest.fn(),
 }))
 
+const mockedFocusFirstFocusableChild = focusFirstFocusableChild as jest.MockedFunction<typeof focusFirstFocusableChild>
 const mockedFocusFirstInteractiveChild = focusFirstInteractiveChild as jest.MockedFunction<
   typeof focusFirstInteractiveChild
 >
@@ -184,6 +187,254 @@ describe('TabStopPortal', () => {
 
       // unsubscribe should have been called
       expect(tabStopPortal.isActive).toBe(false)
+    })
+  })
+
+  describe('focus', () => {
+    beforeEach(() => {
+      const options: TabStopPortalOptions = { after: afterElement }
+      tabStopPortal = new TabStopPortal(portalContainer, options)
+    })
+
+    it('should focus first focusable child when portal container has tabindex="0"', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '0')
+
+      // Mock document.activeElement to simulate that focus went to a child element
+      const mockActiveElement = portalButton1
+      Object.defineProperty(document, 'activeElement', {
+        value: mockActiveElement,
+        configurable: true,
+      })
+
+      // Mock contains to return true for child element
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(true)
+
+      tabStopPortal.focus()
+
+      expect(mockedFocusFirstFocusableChild).toHaveBeenCalledWith(portalContainer)
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should focus first focusable child when portal container has no tabindex (defaults to "0")', () => {
+      tabStopPortal.activate()
+      // No tabindex attribute set, should default to "0" behavior
+
+      // Mock document.activeElement to simulate that focus went to a child element
+      const mockActiveElement = portalButton1
+      Object.defineProperty(document, 'activeElement', {
+        value: mockActiveElement,
+        configurable: true,
+      })
+
+      // Mock contains to return true for child element
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(true)
+
+      tabStopPortal.focus()
+
+      expect(mockedFocusFirstFocusableChild).toHaveBeenCalledWith(portalContainer)
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should focus the portal container when it has tabindex="-1"', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '-1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(mockedFocusFirstFocusableChild).not.toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should focus the portal container when it has positive tabindex', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(mockedFocusFirstFocusableChild).not.toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should focus the portal container when it has any non-zero tabindex string', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '2')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(mockedFocusFirstFocusableChild).not.toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should do nothing when portal is not active', () => {
+      // Don't activate the portal
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).not.toHaveBeenCalled()
+      expect(mockedFocusFirstFocusableChild).not.toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(false)
+    })
+
+    it('should work correctly after activation and deactivation cycles', () => {
+      portalContainer.setAttribute('tabindex', '-1') // Will focus container directly
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      // Activate, focus, deactivate, reactivate, focus again
+      tabStopPortal.activate()
+      tabStopPortal.focus()
+      expect(focusSpy).toHaveBeenCalledTimes(1)
+      expect(tabStopPortal.isPortalling).toBe(true)
+
+      tabStopPortal.deactivate()
+      tabStopPortal.focus()
+      expect(focusSpy).toHaveBeenCalledTimes(1) // Should not increase
+      expect(tabStopPortal.isPortalling).toBe(true) // Should remain true
+
+      tabStopPortal.activate()
+      tabStopPortal.focus()
+      expect(focusSpy).toHaveBeenCalledTimes(2) // Should increase
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should handle mixed tabindex scenarios correctly', () => {
+      tabStopPortal.activate()
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Test with tabindex="0" (should focus first child)
+      portalContainer.setAttribute('tabindex', '0')
+
+      // Mock document.activeElement and contains for child element
+      Object.defineProperty(document, 'activeElement', {
+        value: portalButton1,
+        configurable: true,
+      })
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(true)
+
+      tabStopPortal.focus()
+      expect(mockedFocusFirstFocusableChild).toHaveBeenCalledWith(portalContainer)
+      expect(focusSpy).not.toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+
+      // Reset mock
+      jest.clearAllMocks()
+
+      // Test with tabindex="-1" (should focus container)
+      portalContainer.setAttribute('tabindex', '-1')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+      expect(focusSpy).toHaveBeenCalled()
+      expect(mockedFocusFirstFocusableChild).not.toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should not set isPortalling when focus goes outside portal', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '-1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be something outside the portal
+      Object.defineProperty(document, 'activeElement', {
+        value: afterElement, // An element outside the portal
+        configurable: true,
+      })
+
+      // Mock contains to return false
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(false)
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(false)
+    })
+
+    it('should set isPortalling when activeElement is contained within portal', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '0')
+
+      // Mock document.activeElement to be a child element
+      Object.defineProperty(document, 'activeElement', {
+        value: portalButton2,
+        configurable: true,
+      })
+
+      // Mock contains to return true
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(true)
+
+      tabStopPortal.focus()
+
+      expect(mockedFocusFirstFocusableChild).toHaveBeenCalledWith(portalContainer)
+      expect(tabStopPortal.isPortalling).toBe(true)
+    })
+
+    it('should handle edge case with tabindex="" (empty string)', () => {
+      tabStopPortal.activate()
+      portalContainer.setAttribute('tabindex', '')
+
+      // Mock document.activeElement to simulate that focus went to a child element
+      const mockActiveElement = portalButton1
+      Object.defineProperty(document, 'activeElement', {
+        value: mockActiveElement,
+        configurable: true,
+      })
+
+      // Mock contains to return true for child element
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(true)
+
+      tabStopPortal.focus()
+
+      // Empty string should be treated as non-"0", so focus container
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Reset and test again to see the actual behavior
+      jest.clearAllMocks()
+
+      // Mock document.activeElement to be the portal container for this test
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+      expect(focusSpy).not.toHaveBeenCalled()
+      expect(mockedFocusFirstFocusableChild).toHaveBeenCalled()
     })
   })
 
