@@ -21,6 +21,8 @@ jest.mock('../../primitives/modifiers', () => ({
 jest.mock('../../primitives/selectors', () => ({
   getFirstFocusableChild: jest.fn(),
   getLastFocusableChild: jest.fn(),
+  getFirstInteractiveChild: jest.fn(),
+  getLastInteractiveChild: jest.fn(),
 }))
 
 const mockedFocusFirstFocusableChild = focusFirstFocusableChild as jest.MockedFunction<typeof focusFirstFocusableChild>

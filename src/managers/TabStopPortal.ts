@@ -6,7 +6,12 @@ import {
   focusNextInteractiveElement,
   focusPreviousInteractiveElement,
 } from '../primitives/modifiers'
-import { getFirstFocusableChild, getLastFocusableChild } from '../primitives/selectors'
+import {
+  getFirstFocusableChild,
+  getFirstInteractiveChild,
+  getLastFocusableChild,
+  getLastInteractiveChild,
+} from '../primitives/selectors'
 import NavigationObserver, { NavigationEvent } from './NavigationObserver'
 
 export interface TabStopPortalOptions {
@@ -140,7 +145,12 @@ export default class TabStopPortal {
       }
 
       // handle A2
-      if (isForwardNavigating && fromElement === getLastFocusableChild(this.portalContainer) && this.isPortalling) {
+      if (
+        isForwardNavigating &&
+        (fromElement === getLastFocusableChild(this.portalContainer) ||
+          fromElement === getLastInteractiveChild(this.portalContainer)) &&
+        this.isPortalling
+      ) {
         this.isPortalling = false
         event.preventDefault()
         focusNextInteractiveElement(document.body, this.options.after)
@@ -151,7 +161,8 @@ export default class TabStopPortal {
         isBackwardNavigating &&
         toElement === this.options.after &&
         !this.isPortalling &&
-        fromElement !== getFirstFocusableChild(this.portalContainer)
+        fromElement !== getFirstFocusableChild(this.portalContainer) &&
+        fromElement !== getFirstInteractiveChild(this.portalContainer)
       ) {
         this.isPortalling = true
         event.preventDefault()
@@ -159,7 +170,12 @@ export default class TabStopPortal {
       }
 
       // handle A4
-      if (isBackwardNavigating && fromElement === getFirstFocusableChild(this.portalContainer) && this.isPortalling) {
+      if (
+        isBackwardNavigating &&
+        (fromElement === getFirstFocusableChild(this.portalContainer) ||
+          fromElement === getFirstInteractiveChild(this.portalContainer)) &&
+        this.isPortalling
+      ) {
         this.isPortalling = false
         event.preventDefault()
         this.options.after.focus()
@@ -173,7 +189,8 @@ export default class TabStopPortal {
         isForwardNavigating &&
         toElement === this.options.before &&
         !this.isPortalling &&
-        fromElement !== getLastFocusableChild(this.portalContainer)
+        fromElement !== getLastFocusableChild(this.portalContainer) &&
+        fromElement !== getLastInteractiveChild(this.portalContainer)
       ) {
         this.isPortalling = true
         event.preventDefault()
@@ -181,7 +198,12 @@ export default class TabStopPortal {
       }
 
       // handle B2
-      if (isForwardNavigating && fromElement === getLastFocusableChild(this.portalContainer) && this.isPortalling) {
+      if (
+        isForwardNavigating &&
+        (fromElement === getLastFocusableChild(this.portalContainer) ||
+          fromElement === getLastInteractiveChild(this.portalContainer)) &&
+        this.isPortalling
+      ) {
         this.isPortalling = false
         event.preventDefault()
         this.options.before.focus()
@@ -195,7 +217,12 @@ export default class TabStopPortal {
       }
 
       // handle B4
-      if (isBackwardNavigating && fromElement === getFirstFocusableChild(this.portalContainer) && this.isPortalling) {
+      if (
+        isBackwardNavigating &&
+        (fromElement === getFirstFocusableChild(this.portalContainer) ||
+          fromElement === getFirstInteractiveChild(this.portalContainer)) &&
+        this.isPortalling
+      ) {
         this.isPortalling = false
         event.preventDefault()
         focusPreviousInteractiveElement(document.body, this.options.before)
