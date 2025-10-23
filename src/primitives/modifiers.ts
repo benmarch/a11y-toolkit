@@ -74,6 +74,7 @@ export const focusPreviousInteractiveElement = (container: Elemental, currentEle
 export const deactivateInteractiveElements = (elements: ElementList) => {
   for (const element of elements) {
     if (element instanceof HTMLElement) {
+      element.dataset.tabPortalDeactivated = element.tabIndex.toString()
       element.tabIndex = -1
     }
   }
@@ -88,4 +89,29 @@ export const deactivateInteractiveElements = (elements: ElementList) => {
  */
 export const deactivateInteractiveChildren = (container: Elemental) => {
   deactivateInteractiveElements(new ElementList(getInteractiveChildren(container)))
+}
+
+/**
+ * Deactivates tab focus of any interactive elements by setting tabindex="-1"
+ *
+ * @param elements A list of any element-like DOM objects
+ */
+export const activateInteractiveElements = (elements: ElementList) => {
+  for (const element of elements) {
+    if (element instanceof HTMLElement && element.dataset.tabPortalDeactivated !== undefined) {
+      element.tabIndex = Number(element.dataset.tabPortalDeactivated)
+      delete element.dataset.tabPortalDeactivated
+    }
+  }
+}
+
+/**
+ * Given a container, this finds all interactive elements and deactivates their tab focus.
+ *
+ * This is useful for preventing access to elements within a container that is itself interactive.
+ *
+ * @param container Container element to search within
+ */
+export const activateInteractiveChildren = (container: HTMLElement) => {
+  activateInteractiveElements(new ElementList(container.querySelectorAll('[data-tab-portal-deactivated]')))
 }

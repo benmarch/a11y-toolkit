@@ -1,5 +1,7 @@
 import { FocusableElement } from '../domain/interfaces'
 import {
+  activateInteractiveChildren,
+  deactivateInteractiveChildren,
   focusFirstFocusableChild,
   focusFirstInteractiveChild,
   focusLastInteractiveChild,
@@ -15,9 +17,17 @@ import {
 import NavigationObserver, { NavigationEvent } from './NavigationObserver'
 
 export interface TabStopPortalOptions {
+  /** Set to `true` if the `TabStopPortal` should be activated immediately */
   isActive?: boolean
+
+  /** Element that the portal is placed after in the tab order */
   after?: FocusableElement
+
+  /** Element that the portal is placed before in the tab order */
   before?: FocusableElement
+
+  /** Set to `true` if the portal should only be tabbable when portalling */
+  isPortalOnly?: boolean
 }
 
 /**
@@ -139,6 +149,11 @@ export default class TabStopPortal {
     if (this.options.after) {
       // handle A1
       if (isForwardNavigating && fromElement === this.options.after && !this.isPortalling) {
+        // reactivate any deactivated elements
+        if (this.options.isPortalOnly) {
+          activateInteractiveChildren(this.portalContainer)
+        }
+
         this.isPortalling = true
         event.preventDefault()
         focusFirstInteractiveChild(this.portalContainer)
@@ -164,6 +179,11 @@ export default class TabStopPortal {
         fromElement !== getFirstFocusableChild(this.portalContainer) &&
         fromElement !== getFirstInteractiveChild(this.portalContainer)
       ) {
+        // reactivate any deactivated elements
+        if (this.options.isPortalOnly) {
+          activateInteractiveChildren(this.portalContainer)
+        }
+
         this.isPortalling = true
         event.preventDefault()
         focusLastInteractiveChild(this.portalContainer)
@@ -192,6 +212,11 @@ export default class TabStopPortal {
         fromElement !== getLastFocusableChild(this.portalContainer) &&
         fromElement !== getLastInteractiveChild(this.portalContainer)
       ) {
+        // reactivate any deactivated elements
+        if (this.options.isPortalOnly) {
+          activateInteractiveChildren(this.portalContainer)
+        }
+
         this.isPortalling = true
         event.preventDefault()
         focusFirstInteractiveChild(this.portalContainer)
@@ -211,6 +236,11 @@ export default class TabStopPortal {
 
       // handle B3
       if (isBackwardNavigating && fromElement === this.options.before && !this.isPortalling) {
+        // reactivate any deactivated elements
+        if (this.options.isPortalOnly) {
+          activateInteractiveChildren(this.portalContainer)
+        }
+
         this.isPortalling = true
         event.preventDefault()
         focusLastInteractiveChild(this.portalContainer)
@@ -227,6 +257,11 @@ export default class TabStopPortal {
         event.preventDefault()
         focusPreviousInteractiveElement(document.body, this.options.before)
       }
+    }
+
+    // make the portal effectively inert
+    if (this.options.isPortalOnly && !this.isPortalling) {
+      deactivateInteractiveChildren(this.portalContainer)
     }
   }
 }

@@ -1,5 +1,7 @@
 import TabStopPortal, { TabStopPortalOptions } from '../TabStopPortal'
 import {
+  activateInteractiveChildren,
+  deactivateInteractiveChildren,
   focusFirstFocusableChild,
   focusFirstInteractiveChild,
   focusLastInteractiveChild,
@@ -10,6 +12,8 @@ import { getFirstFocusableChild, getLastFocusableChild } from '../../primitives/
 
 // Mock the modifiers
 jest.mock('../../primitives/modifiers', () => ({
+  activateInteractiveChildren: jest.fn(),
+  deactivateInteractiveChildren: jest.fn(),
   focusFirstFocusableChild: jest.fn(),
   focusFirstInteractiveChild: jest.fn(),
   focusLastInteractiveChild: jest.fn(),
@@ -25,6 +29,12 @@ jest.mock('../../primitives/selectors', () => ({
   getLastInteractiveChild: jest.fn(),
 }))
 
+const mockedActivateInteractiveChildren = activateInteractiveChildren as jest.MockedFunction<
+  typeof activateInteractiveChildren
+>
+const mockedDeactivateInteractiveChildren = deactivateInteractiveChildren as jest.MockedFunction<
+  typeof deactivateInteractiveChildren
+>
 const mockedFocusFirstFocusableChild = focusFirstFocusableChild as jest.MockedFunction<typeof focusFirstFocusableChild>
 const mockedFocusFirstInteractiveChild = focusFirstInteractiveChild as jest.MockedFunction<
   typeof focusFirstInteractiveChild
@@ -954,6 +964,193 @@ describe('TabStopPortal', () => {
 
       expect(tabStopPortal.isPortalling).toBe(false)
       expect(mockedFocusPreviousInteractiveElement).toHaveBeenCalledWith(document.body, beforeElement)
+    })
+  })
+
+  describe('isPortalOnly functionality', () => {
+    let tabStopPortal: TabStopPortal
+
+    beforeEach(() => {
+      tabStopPortal = new TabStopPortal(portalContainer, {
+        isActive: true,
+        after: afterElement,
+        isPortalOnly: true,
+      })
+    })
+
+    describe('when entering portal mode', () => {
+      it('should activate interactive children when tabbing forward from after element', () => {
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: afterElement,
+          toElement: portalButton1,
+          isTabNavigating: true,
+          isForwardNavigating: true,
+          isBackwardNavigating: false,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        tabStopPortal.handleNavigation(navEvent)
+
+        expect(mockedActivateInteractiveChildren).toHaveBeenCalledWith(portalContainer)
+        expect(mockedFocusFirstInteractiveChild).toHaveBeenCalledWith(portalContainer)
+        expect(tabStopPortal.isPortalling).toBe(true)
+      })
+
+      it('should activate interactive children when tabbing backward to portal from next element', () => {
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: nextElement,
+          toElement: afterElement,
+          isTabNavigating: true,
+          isForwardNavigating: false,
+          isBackwardNavigating: true,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        tabStopPortal.handleNavigation(navEvent)
+
+        expect(mockedActivateInteractiveChildren).toHaveBeenCalledWith(portalContainer)
+        expect(mockedFocusLastInteractiveChild).toHaveBeenCalledWith(portalContainer)
+        expect(tabStopPortal.isPortalling).toBe(true)
+      })
+
+      it('should activate interactive children when using before element configuration', () => {
+        const portalWithBefore = new TabStopPortal(portalContainer, {
+          isActive: true,
+          before: beforeElement,
+          isPortalOnly: true,
+        })
+
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: previousElement,
+          toElement: beforeElement,
+          isTabNavigating: true,
+          isForwardNavigating: true,
+          isBackwardNavigating: false,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        portalWithBefore.handleNavigation(navEvent)
+
+        expect(mockedActivateInteractiveChildren).toHaveBeenCalledWith(portalContainer)
+        expect(mockedFocusFirstInteractiveChild).toHaveBeenCalledWith(portalContainer)
+        expect(portalWithBefore.isPortalling).toBe(true)
+      })
+    })
+
+    describe('when portal becomes inert', () => {
+      it('should deactivate interactive children when not portalling', () => {
+        // Start in a portalling state, then exit it
+        tabStopPortal.isPortalling = true
+
+        // Create a navigation event that will exit the portal and set isPortalling to false
+        // Use A4 scenario: backward tab past first portal element
+        mockedGetFirstFocusableChild.mockReturnValue(portalButton1)
+
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: portalButton1,
+          toElement: afterElement,
+          isTabNavigating: true,
+          isForwardNavigating: false,
+          isBackwardNavigating: true,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        tabStopPortal.handleNavigation(navEvent)
+
+        // The navigation should have exited the portal (isPortalling = false)
+        // and then the final check should deactivate children
+        expect(tabStopPortal.isPortalling).toBe(false)
+        expect(mockedDeactivateInteractiveChildren).toHaveBeenCalledWith(portalContainer)
+      })
+
+      it('should not deactivate when actively portalling', () => {
+        tabStopPortal.isPortalling = true
+
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: portalButton1,
+          toElement: portalButton2,
+          isTabNavigating: true,
+          isForwardNavigating: true,
+          isBackwardNavigating: false,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        tabStopPortal.handleNavigation(navEvent)
+
+        expect(mockedDeactivateInteractiveChildren).not.toHaveBeenCalled()
+      })
+
+      it('should not deactivate when isPortalOnly is false', () => {
+        const normalPortal = new TabStopPortal(portalContainer, {
+          isActive: true,
+          after: afterElement,
+          isPortalOnly: false,
+        })
+
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: portalButton1,
+          toElement: afterElement,
+          isTabNavigating: true,
+          isForwardNavigating: false,
+          isBackwardNavigating: true,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        normalPortal.handleNavigation(navEvent)
+
+        expect(mockedDeactivateInteractiveChildren).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('edge cases', () => {
+      it('should not activate children when isPortalOnly is undefined', () => {
+        const portalWithoutOption = new TabStopPortal(portalContainer, {
+          isActive: true,
+          after: afterElement,
+        })
+
+        const navEvent = {
+          event: { preventDefault: jest.fn() },
+          fromElement: afterElement,
+          toElement: portalButton1,
+          isTabNavigating: true,
+          isForwardNavigating: true,
+          isBackwardNavigating: false,
+          isMouseNavigating: false,
+          isArrowKeyNavigating: false,
+          isKeyboardNavigating: true,
+        }
+
+        // @ts-expect-error - accessing private method for testing
+        portalWithoutOption.handleNavigation(navEvent)
+
+        expect(mockedActivateInteractiveChildren).not.toHaveBeenCalled()
+        expect(mockedDeactivateInteractiveChildren).not.toHaveBeenCalled()
+      })
     })
   })
 })

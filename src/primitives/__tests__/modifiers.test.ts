@@ -7,6 +7,8 @@ import {
   focusPreviousInteractiveElement,
   deactivateInteractiveElements,
   deactivateInteractiveChildren,
+  activateInteractiveElements,
+  activateInteractiveChildren,
 } from '../modifiers'
 import ElementList from '../../domain/ElementList'
 import {
@@ -328,6 +330,19 @@ describe('modifiers', () => {
       expect(element3.tabIndex).toBe(-1)
     })
 
+    it('should store original tabIndex in dataset before deactivating', () => {
+      const elementList = new ElementList([element1, element2, element3])
+
+      deactivateInteractiveElements(elementList)
+
+      expect(element1.dataset.tabPortalDeactivated).toBe('0')
+      expect(element2.dataset.tabPortalDeactivated).toBe('1')
+      expect(element3.dataset.tabPortalDeactivated).toBe('2')
+      expect(element1.tabIndex).toBe(-1)
+      expect(element2.tabIndex).toBe(-1)
+      expect(element3.tabIndex).toBe(-1)
+    })
+
     it('should handle empty element list', () => {
       const emptyList = new ElementList()
 
@@ -434,6 +449,126 @@ describe('modifiers', () => {
       deactivateInteractiveChildren(container)
       expect(child1.tabIndex).toBe(-1)
       expect(child2.tabIndex).toBe(-1)
+    })
+  })
+
+  describe('activateInteractiveElements', () => {
+    let element1: HTMLElement
+    let element2: HTMLElement
+    let element3: HTMLElement
+
+    beforeEach(() => {
+      element1 = document.createElement('button')
+      element2 = document.createElement('input')
+      element3 = document.createElement('a')
+
+      element1.tabIndex = 0
+      element2.tabIndex = 0
+      element3.tabIndex = 0
+    })
+
+    it('should restore tabIndex for HTMLElements with tabPortalDeactivated dataset', () => {
+      element1.dataset.tabPortalDeactivated = '5'
+      element2.dataset.tabPortalDeactivated = '0'
+      element1.tabIndex = -1
+      element2.tabIndex = -1
+
+      const elementList = new ElementList([element1, element2])
+      activateInteractiveElements(elementList)
+
+      expect(element1.tabIndex).toBe(5)
+      expect(element2.tabIndex).toBe(0)
+      expect(element1.dataset.tabPortalDeactivated).toBeUndefined()
+      expect(element2.dataset.tabPortalDeactivated).toBeUndefined()
+    })
+
+    it('should skip elements without tabPortalDeactivated dataset', () => {
+      element1.tabIndex = -1
+      element2.tabIndex = -1
+      element2.dataset.tabPortalDeactivated = '3'
+
+      const elementList = new ElementList([element1, element2])
+      activateInteractiveElements(elementList)
+
+      expect(element1.tabIndex).toBe(-1) // Should remain unchanged
+      expect(element2.tabIndex).toBe(3)
+      expect(element1.dataset.tabPortalDeactivated).toBeUndefined()
+      expect(element2.dataset.tabPortalDeactivated).toBeUndefined()
+    })
+
+    it('should skip non-HTMLElements', () => {
+      const nonHtmlElement = document.createTextNode('text')
+      const elementList = new ElementList([nonHtmlElement, element1])
+      element1.dataset.tabPortalDeactivated = '2'
+      element1.tabIndex = -1
+
+      activateInteractiveElements(elementList)
+
+      expect(element1.tabIndex).toBe(2)
+      expect(element1.dataset.tabPortalDeactivated).toBeUndefined()
+    })
+
+    it('should handle empty ElementList', () => {
+      const elementList = new ElementList([])
+
+      expect(() => activateInteractiveElements(elementList)).not.toThrow()
+    })
+
+    it('should handle numeric string conversion correctly', () => {
+      element1.dataset.tabPortalDeactivated = '-1'
+      element2.dataset.tabPortalDeactivated = '10'
+      element1.tabIndex = 0
+      element2.tabIndex = 0
+
+      const elementList = new ElementList([element1, element2])
+      activateInteractiveElements(elementList)
+
+      expect(element1.tabIndex).toBe(-1)
+      expect(element2.tabIndex).toBe(10)
+      expect(element1.dataset.tabPortalDeactivated).toBeUndefined()
+      expect(element2.dataset.tabPortalDeactivated).toBeUndefined()
+    })
+  })
+
+  describe('activateInteractiveChildren', () => {
+    let child1: HTMLElement
+    let child2: HTMLElement
+
+    beforeEach(() => {
+      child1 = document.createElement('button')
+      child2 = document.createElement('input')
+      child1.tabIndex = 0
+      child2.tabIndex = 0
+    })
+
+    it('should query for elements with data-tab-portal-deactivated and activate them', () => {
+      const containerWithDataset = document.createElement('div')
+      const queryAllSpy = jest.spyOn(containerWithDataset, 'querySelectorAll')
+
+      // Create mock elements with the dataset
+      child1.dataset.tabPortalDeactivated = '0'
+      child2.dataset.tabPortalDeactivated = '5'
+      child1.tabIndex = -1
+      child2.tabIndex = -1
+
+      queryAllSpy.mockReturnValue([child1, child2] as unknown as NodeListOf<Element>)
+
+      activateInteractiveChildren(containerWithDataset)
+
+      expect(queryAllSpy).toHaveBeenCalledWith('[data-tab-portal-deactivated]')
+      expect(child1.tabIndex).toBe(0)
+      expect(child2.tabIndex).toBe(5)
+      expect(child1.dataset.tabPortalDeactivated).toBeUndefined()
+      expect(child2.dataset.tabPortalDeactivated).toBeUndefined()
+    })
+
+    it('should handle empty query result', () => {
+      const containerWithDataset = document.createElement('div')
+      const queryAllSpy = jest.spyOn(containerWithDataset, 'querySelectorAll')
+      queryAllSpy.mockReturnValue([] as unknown as NodeListOf<Element>)
+
+      expect(() => activateInteractiveChildren(containerWithDataset)).not.toThrow()
+      expect(queryAllSpy).toHaveBeenCalledWith('[data-tab-portal-deactivated]')
     })
   })
 })
