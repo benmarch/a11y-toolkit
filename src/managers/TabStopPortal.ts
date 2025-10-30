@@ -117,6 +117,11 @@ export default class TabStopPortal {
 
     if (document.activeElement === this.portalContainer || this.portalContainer.contains(document.activeElement)) {
       this.isPortalling = true
+
+      // reactivate any deactivated elements
+      if (this.options.isPortalOnly) {
+        activateInteractiveChildren(this.portalContainer)
+      }
     }
   }
 

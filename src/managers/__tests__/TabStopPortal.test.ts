@@ -448,6 +448,121 @@ describe('TabStopPortal', () => {
       expect(focusSpy).not.toHaveBeenCalled()
       expect(mockedFocusFirstFocusableChild).toHaveBeenCalled()
     })
+
+    it('should activate interactive children when isPortalOnly is true and focus is successful', () => {
+      // Create a portal with isPortalOnly option
+      const portalOnlyOptions: TabStopPortalOptions = { after: afterElement, isPortalOnly: true }
+      tabStopPortal = new TabStopPortal(portalContainer, portalOnlyOptions)
+      tabStopPortal.activate()
+
+      portalContainer.setAttribute('tabindex', '-1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container (successful focus)
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+      expect(mockedActivateInteractiveChildren).toHaveBeenCalledWith(portalContainer)
+    })
+
+    it('should activate interactive children when isPortalOnly is true and focus on child is successful', () => {
+      // Create a portal with isPortalOnly option
+      const portalOnlyOptions: TabStopPortalOptions = { after: afterElement, isPortalOnly: true }
+      tabStopPortal = new TabStopPortal(portalContainer, portalOnlyOptions)
+      tabStopPortal.activate()
+
+      portalContainer.setAttribute('tabindex', '0')
+
+      // Mock document.activeElement to be a child element (successful focus)
+      Object.defineProperty(document, 'activeElement', {
+        value: portalButton1,
+        configurable: true,
+      })
+
+      // Mock contains to return true
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(true)
+
+      tabStopPortal.focus()
+
+      expect(mockedFocusFirstFocusableChild).toHaveBeenCalledWith(portalContainer)
+      expect(tabStopPortal.isPortalling).toBe(true)
+      expect(mockedActivateInteractiveChildren).toHaveBeenCalledWith(portalContainer)
+    })
+
+    it('should not activate interactive children when isPortalOnly is false', () => {
+      // Create a portal without isPortalOnly option (defaults to false)
+      const normalOptions: TabStopPortalOptions = { after: afterElement, isPortalOnly: false }
+      tabStopPortal = new TabStopPortal(portalContainer, normalOptions)
+      tabStopPortal.activate()
+
+      portalContainer.setAttribute('tabindex', '-1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+      expect(mockedActivateInteractiveChildren).not.toHaveBeenCalled()
+    })
+
+    it('should not activate interactive children when isPortalOnly is undefined', () => {
+      // Create a portal without isPortalOnly option (defaults to undefined)
+      const defaultOptions: TabStopPortalOptions = { after: afterElement }
+      tabStopPortal = new TabStopPortal(portalContainer, defaultOptions)
+      tabStopPortal.activate()
+
+      portalContainer.setAttribute('tabindex', '-1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be the portal container
+      Object.defineProperty(document, 'activeElement', {
+        value: portalContainer,
+        configurable: true,
+      })
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(true)
+      expect(mockedActivateInteractiveChildren).not.toHaveBeenCalled()
+    })
+
+    it('should not activate interactive children when focus fails', () => {
+      // Create a portal with isPortalOnly option
+      const portalOnlyOptions: TabStopPortalOptions = { after: afterElement, isPortalOnly: true }
+      tabStopPortal = new TabStopPortal(portalContainer, portalOnlyOptions)
+      tabStopPortal.activate()
+
+      portalContainer.setAttribute('tabindex', '-1')
+      const focusSpy = jest.spyOn(portalContainer, 'focus')
+
+      // Mock document.activeElement to be something outside the portal (focus failed)
+      Object.defineProperty(document, 'activeElement', {
+        value: afterElement,
+        configurable: true,
+      })
+
+      // Mock contains to return false
+      jest.spyOn(portalContainer, 'contains').mockReturnValue(false)
+
+      tabStopPortal.focus()
+
+      expect(focusSpy).toHaveBeenCalled()
+      expect(tabStopPortal.isPortalling).toBe(false)
+      expect(mockedActivateInteractiveChildren).not.toHaveBeenCalled()
+    })
   })
 
   describe('after element navigation', () => {
