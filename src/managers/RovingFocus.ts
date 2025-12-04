@@ -7,19 +7,20 @@ export interface RovingFocusOptions {
 
 /**
  * Implements a Roving Focus or Roving Tab Index pattern: https://developer.mozilla.org/en-US/docs/Web/Accessibility/Guides/Keyboard-navigable_JavaScript_widgets#technique_1_roving_tabindex
- * 
+ *
  * Ensures the only one of the provided elements can be tab-focused at any given time.
  * The other elements will be deactivated from tabbing by setting tabindex="-1".
- * 
+ *
  * The focused element can be changed by calling the `focus()` method with the index of the element
  * to focus, or by calling `next()` or `prev()` to cycle.
- * 
+ *
  * This is useful for implementing group-like patterns where only one element in a group should be focusable at a time.
  */
 export default class RovingFocus {
+  // used to store the index when inactive
+  private internalIndex: number = 0
   elements: ElementList
   isActive: boolean = false
-  index = 0
 
   /**
    * @param elements A list of elements to manage focus for
@@ -30,6 +31,60 @@ export default class RovingFocus {
 
     if (isActive) {
       this.activate()
+    }
+  }
+
+  // gets the currently focused element index
+  get index(): number {
+    if (!this.isActive) {
+      return this.internalIndex
+    }
+
+    // iterate through each element
+    let i = -1
+    for (const element of this.elements) {
+      // increment
+      i += 1
+
+      // if the elemental is not focusable then continue
+      if (!('tabIndex' in element)) {
+        continue
+      }
+
+      if (element.tabIndex === 0) {
+        return i
+      }
+    }
+
+    return this.internalIndex
+  }
+
+  // sets the currently focused element index
+  set index(index: number) {
+    this.internalIndex = index
+
+    if (!this.isActive) {
+      return
+    }
+
+    // iterate through each element
+    let i = -1
+    for (const element of this.elements) {
+      // increment
+      i++
+
+      // if the elemental is not focusable then continue
+      if (!('tabIndex' in element)) {
+        continue
+      }
+
+      // find the active element and focus it
+      if (index === i) {
+        element.tabIndex = 0
+      } else {
+        // unfocus the other elements
+        element.tabIndex = -1
+      }
     }
   }
 
@@ -83,38 +138,25 @@ export default class RovingFocus {
   }
 
   /**
-   * Applies appropriate tabindex to all elements. Optionally focuses the active element. 
-   * 
+   * Applies appropriate tabindex to all elements. Optionally focuses the active element.
+   *
    * @param shouldFocusActive If true, will immediately focus the active element
    */
   activate(shouldFocusActive: boolean = false) {
     this.isActive = true
 
-    // iterate through each element
-    let i = -1
-    for (const element of this.elements) {
-      // increment
-      i++
+    // apply tabindexes
+    this.index = this.internalIndex
 
-      // if the elemental is not focusable then continue
-      if (!('tabIndex' in element)) {
-        continue
-      }
-
-      // find the active element and focus it
-      if (this.index === i) {
-        element.tabIndex = 0
-        if (shouldFocusActive) {
-          element.focus()
-        }
-      } else {
-        // unfocus the other elements
-        element.tabIndex = -1
+    if (shouldFocusActive) {
+      const activeElement = this.elements.get(this.index)
+      if (activeElement && 'tabIndex' in activeElement) {
+        activeElement.focus()
       }
     }
   }
 
-  /** 
+  /**
    * Removes tabindexes from all elements
    */
   deactivate() {
